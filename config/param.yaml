@@ -1,0 +1,120 @@
+# Topics
+points_topic: "/velodyne_points"                 # Lidar话题名
+imu_topic: "/imu/data"                           # IMU话题名
+# 约束开关
+enable_gps: false                                # 是否使用GPS
+enable_imu_frontend: false
+enable_floor_detection: false
+enable_imu_acceleration: true                    # 是否使用IMU加速度信息
+enable_imu_orientation: true                     # 是否使用IMU角度信息
+
+prefiltering:
+  deskewing: true
+  base_link_frame: "base_link"
+  use_distance_filter: true                      # 是否使用距离滤波
+  distance_near_thresh: 0.1
+  distance_far_thresh: 100.0
+  downsample_method: "VOXELGRID"                   # 降采样方式
+  downsample_resolution: 0.1                     # 降采样分辨率
+  outlier_removal_method: "RADIUS"                 # 剔除离群点方式
+  statistical_mean_k: 30                         # STATISTICAL剔除离群点
+  statistical_stddev: 1.2                        # STATISTICAL剔除离群点
+  radius_radius: 0.5                             # RADIUS剔除离群点 指定的半径
+  radius_min_neighbors: 2                        # RADIUS剔除离群点 指定半径内至少需要有几个点
+
+scan_matching_odometry:
+  odom_frame_id: "odom"
+  keyframe_delta_trans: 1.0                            # 提取关键帧中的距离阈值
+  keyframe_delta_angle: 1.0                            # 提取关键帧中的角度阈值
+  keyframe_delta_time: 10000.0                         # 提取关键帧中的时间阈值
+  transform_thresholding: false                        # 匹配的两帧之间delta transform要不要验证一下
+  enable_robot_odometry_init_guess: false
+  max_acceptable_trans: 1.0                            # 匹配的两帧之间delta transform的delta t
+  max_acceptable_angle: 1.0                            # 匹配的两帧之间delta transform的delta R
+  downsample_method: "NONE"                            #  对topic传过来的点云再次降采样的方法
+  downsample_resolution: 0.1                           # 降采样分辨率
+  # ICP, NDT, GICP_OMP, NDT_OMP, FAST_GICP(recommended), or FAST_VGICP
+  registration_method: "FAST_GICP"                     # 点云匹配方法
+  reg_num_threads: 0
+  reg_transformation_epsilon: 0.01                     # 点云匹配参数 判断结束条件:两次变换之间的差
+  reg_maximum_iterations: 64                           # 点云匹配参数 最大迭代次
+  reg_max_correspondence_distance: 2.5                 # 点云匹配参数 判断结束条件:两次变换之间的差
+  reg_max_optimizer_iterations: 20
+  reg_use_reciprocal_correspondences: false
+  reg_correspondence_randomness: 20
+  reg_resolution: 1.0
+  reg_nn_search_method: "DIRECT7"
+
+hdl_graph_slam:
+  map_frame_id: "map"                            # map frame名字
+  odom_frame_id: "odom"                          # odom frame名字
+  # 优化参数
+  # solvers: gn_var, gn_fix6_3, gn_var_cholmod, lm_var, lm_fix6_3, lm_var_cholmod, ...
+  g2o_solver_type: "lm_var_cholmod"              # g2o解算器类型
+  g2o_solver_num_iterations: 512                 # g2o解算器最大迭代次数
+  # 关键帧
+  max_keyframes_per_update: 10                   # 每次优化过程中，最多新增加几个node
+  keyframe_delta_trans: 2.0                        # 又一次判断关键帧的距离，这次是添加到graph里面的，上面是点云匹配过程中的
+  keyframe_delta_angle: 2.0                      # 又一次判断关键帧的角度，这次是添加到graph里面的，上面是点云匹配过程中的
+  # 固定起始节点
+  fix_first_node: true                           # 图优化过程中，是否固定第一个节点
+  fix_first_node_stddev: 10 10 10 1 1 1          # 第一个节点的信息矩阵
+  fix_first_node_adaptive: true                  #
+  # 回环检测
+  distance_thresh: 10.0                           # 节点之间的直线距离阈值
+  accum_distance_thresh: 15.0                    # 节点的里程距离阈值
+  min_edge_interval: 5.0                         # 两次构建回环检测的节点之间的最小距离
+  fitness_score_thresh: 0.5                      # 回环检测匹配度的阈值，越小越好
+  # GPS
+  gps_edge_robust_kernel: "NONE"                 # GPS数据鲁棒核类型
+  gps_edge_robust_kernel_size: 1.0               # GPS数据鲁棒核大小
+  gps_edge_stddev_xy: 20.0                       # GPS经纬数据的信息矩阵的权重
+  gps_edge_stddev_z: 5.0                         # GPS高度数据的信息矩阵的权重
+  # IMU
+  imu_time_offset: 0.0                           # IMU数据时间差
+  imu_orientation_edge_robust_kernel: "NONE"     # IMU旋转数据的鲁棒核类型
+  imu_orientation_edge_stddev: 1.0               # IMU旋转数据的信息矩阵的权重
+  imu_acceleration_edge_robust_kernel: "NONE"    # IMU加速度数据鲁棒核类型
+  imu_acceleration_edge_stddev: 1.0              # IMU加速度数据的信息矩阵的权重
+    
+  registration_method: "FAST_GICP"
+  reg_num_threads: 0
+  reg_transformation_epsilon: 0.01
+  reg_maximum_iterations: 64
+  reg_max_correspondence_distance: 2.5
+  reg_max_optimizer_iterations: 20
+  reg_use_reciprocal_correspondences: false
+  reg_correspondence_randomness: 20
+  reg_resolution: 1.0
+  reg_nn_search_method: "DIRECT7"
+
+  # 地面检测
+  floor_edge_robust_kernel: "NONE"
+  floor_edge_stddev: 10.0
+
+  # 点云匹配
+  # kernels: NONE, Cauchy, DCS, Fair, GemanMcClure, Huber, PseudoHuber, Saturated, Tukey, Welsch
+  odometry_edge_robust_kernel: "NONE"               # GPS数据鲁棒核类型
+  odometry_edge_robust_kernel_size: 1.0           # GPS数据鲁棒核大小
+  loop_closure_edge_robust_kernel: "Huber"        # 回环检测数据鲁棒核类型
+  loop_closure_edge_robust_kernel_size: 1.0       # 回环检测数据鲁棒核大小
+  use_const_inf_matrix: false
+  const_stddev_x: 0.5
+  const_stddev_q: 0.1
+  var_gain_a: 20.0
+  min_stddev_x: 0.1
+  max_stddev_x: 5.0
+  min_stddev_q: 0.05
+  max_stddev_q: 0.2
+  # 更新
+  graph_update_interval: 3.0                       # TODO graph更新的时间间隔
+  map_cloud_update_interval: 10.0                   # 点云地图更新的时间间隔
+  map_cloud_resolution: 0.05                       # 点云地图以八叉树形式保存，八叉树的分辨率
+
+floor_detection:
+  tilt_deg: 0.0
+  sensor_height: 2.0
+  height_clip_range: 1.0
+  floor_pts_thresh: 512
+  use_normal_filtering: true
+  normal_filter_thresh: 20.0
